@@ -9,7 +9,11 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.jsp.tagext.TryCatchFinally;
+import javax.swing.text.html.parser.Entity;
 
+import com.google.gson.Gson;
+import com.ismael.DAO.ProductoDao;
 import com.ismael.model.Productos1;
 
 
@@ -32,7 +36,58 @@ public class ServeleteControler extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		response.getWriter().append("Served at: ").append(request.getContextPath());
+		//response.getWriter().append("Served at: ").append(request.getContextPath());
+		Productos1 pr = new Productos1(); 
+		ProductoDao prd = new ProductoDao();
+		String id = null;
+		String nombrepr = null;
+		String preciopr = null;
+		String cantidadpr = null;
+		String totalpr = null;
+		try {
+			id = request.getParameter("Id");
+			nombrepr = request.getParameter("Nproductos");
+			preciopr = request.getParameter("Pproductos");
+			cantidadpr = request.getParameter("Cproductos");
+			totalpr = request.getParameter("Tproductos");
+			
+			pr.setId(Integer.parseInt(id));
+			pr.setNombre_Producto(nombrepr);
+			pr.setPrecio_Producto(Double.parseDouble(preciopr));
+			pr.setCantidad_Producto(Integer.parseInt(cantidadpr));
+			pr.setTotal_Producto(Double.parseDouble(totalpr));
+		}
+		catch (Exception e) {
+				// TODO: handle exception
+			}
+			
+			String acction = request.getParameter("btn");
+			
+			if (acction.equals("GUARDAR")) {
+				pr.setId(Integer.parseInt(id));
+				pr.setNombre_Producto(nombrepr);
+				pr.setPrecio_Producto(Double.parseDouble(preciopr));
+				pr.setCantidad_Producto(Integer.parseInt(cantidadpr));
+				pr.setTotal_Producto(Double.parseDouble(totalpr));
+				 
+				prd.agregardatos(pr);
+			}
+			 
+			else if(acction.equals("ACTUALIZAR")){
+				pr.setId(Integer.parseInt(id));
+				pr.setNombre_Producto(nombrepr);
+				pr.setPrecio_Producto(Double.parseDouble(preciopr));
+				pr.setCantidad_Producto(Integer.parseInt(cantidadpr));
+				pr.setTotal_Producto(Double.parseDouble(totalpr));
+				 
+				prd.actualizarDatos(pr);
+			}else if(acction.equals("ELIMINAR")) {
+				 
+				pr.setId(Integer.parseInt(id));
+				
+				prd.eliminarDatos(pr);
+			}
+			response.sendRedirect("index.jsp");
 	}
 
 	/**
@@ -40,65 +95,18 @@ public class ServeleteControler extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-
+		ProductoDao prdao = new ProductoDao();
 		
-            String acction = request.getParameter("btn");
-		    EntityManager em;
-			EntityManagerFactory emf;
-			emf = Persistence.createEntityManagerFactory("INICIANDO-JPA");
-			em = emf.createEntityManager();
-			Productos1 pr = new Productos1();
-                try {
-					
-				
-		    String id = request.getParameter("Id");
-			String nombrepr = request.getParameter("Nproductos");
-			String preciopr = request.getParameter("Pproductos");
-			String cantidadpr = request.getParameter("Cproductos");
-			String totalpr = request.getParameter("Tproductos");
-			
-			
-			pr.setId(Integer.parseInt(id));
-			pr.setNombre_Producto(nombrepr);
-			pr.setPrecio_Producto(Double.parseDouble(preciopr));
-			pr.setCantidad_Producto(Integer.parseInt(cantidadpr));
-			pr.setTotal_Producto(Double.parseDouble(totalpr));
-			
-			
-			
-                } catch (Exception e) {
-					// TODO: handle exception
-				}
+		Gson json = new Gson();
 		
-		if (acction.equals("agregar")) {
-
-			em.getTransaction().begin();
-			em.persist(pr);
-			em.flush();
-			em.getTransaction().commit();
-			
-			
-		}else if (acction.equals("modificar")) {
-			
-			em.getTransaction().begin();
-			
-			em.merge(pr);
-				em.flush();
-				em.getTransaction().commit();
-					
-					
-		}else if (acction.equals("eliminar")) {
-
-				
-			pr = em.getReference(Productos1.class, pr.getId());
-			em.getTransaction().begin();
-			em.remove(pr);
-			em.flush();
-			em.getTransaction().commit();
-			
-			
+		try {
+			response.getWriter().append(json.toJson(prdao.productoLista()));
+		} catch (Exception e) {
+			// TODO: handle exception
+			System.out.println(e);
 		}
-		response.sendRedirect("index.jsp");
+		
+            
 	}
 
 }
